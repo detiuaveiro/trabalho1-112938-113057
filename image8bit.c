@@ -10,11 +10,12 @@
 /// 2013, 2023
 
 // Student authors (fill in below):
-// NMec:  Name:
+// NMec:112938  Name: Martim Calisto Pinheiro
+// NMec:113057  Name: Diogo Coutinho
 // 
 // 
 // 
-// Date:
+// Date: 24 nov 2023
 //
 
 #include "image8bit.h"
@@ -89,6 +90,7 @@ static char* errCause;
 /// the previous error cause).  It is not meant to be used in that situation!
 char* ImageErrMsg() { ///
   return errCause;
+
 }
 
 
