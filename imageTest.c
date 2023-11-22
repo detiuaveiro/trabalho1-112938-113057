@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <error.h>
 #include <stdio.h>
-#include <stdlib.h>
+#include <stdlib.h>   
 #include <string.h>
 #include "image8bit.h"
 #include "instrumentation.h"
