@@ -56,7 +56,13 @@ Image ImageCreate(int width, int height, uint8 maxval) ;
 /// If (*imgp)==NULL, no operation is performed.
 /// Ensures: (*imgp)==NULL.
 /// Should never fail, and should preserve global errno/errCause.
-void ImageDestroy(Image* imgp) ;
+void ImageDestroy(Image* imgp) {
+    if (imgp != NULL && *imgp != NULL) {
+        free((*imgp) -> pixel);   //Liberta a memória dos pixels
+        free(*imgp);    //Liberta a memória da estrutura da imagem
+        *imgp = NULL    //Define o ponteiro como NULL
+    }
+}
 
 /// PGM file operations
 
