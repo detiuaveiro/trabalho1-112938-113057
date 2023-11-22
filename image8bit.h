@@ -50,20 +50,15 @@ void ImageInit(void) ;
 /// (The caller is responsible for destroying the returned image!)
 /// On failure, returns NULL and errno/errCause are set accordingly.
 Image ImageCreate(int width, int height, uint8 maxval) ;
+    
 
 /// Destroy the image pointed to by (*imgp).
 ///   imgp : address of an Image variable.
 /// If (*imgp)==NULL, no operation is performed.
 /// Ensures: (*imgp)==NULL.
 /// Should never fail, and should preserve global errno/errCause.
-void ImageDestroy(Image* imgp) {
-    if (imgp != NULL && *imgp != NULL) {
-        free((*imgp) -> pixel);   //Liberta a memória dos pixels
-        free(*imgp);    //Liberta a memória da estrutura da imagem
-        *imgp = NULL    //Define o ponteiro como NULL
-    }
-}
-
+void ImageDestroy(Image* imgp) ;
+    
 /// PGM file operations
 
 /// Load a raw PGM file.
