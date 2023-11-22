@@ -149,12 +149,15 @@ void ImageInit(void) { ///
   InstrCalibrate();
   InstrName[0] = "pixmem";  // InstrCount[0] will count pixel array acesses
   // Name other counters here...
+
+
   
 }
 
 // Macros to simplify accessing instrumentation counters:
 #define PIXMEM InstrCount[0]
 // Add more macros here...
+
 
 // TIP: Search for PIXMEM or InstrCount to see where it is incremented!
 
@@ -174,6 +177,19 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
   assert (height >= 0);
   assert (0 < maxval && maxval <= PixMax);
   // Insert your code here!
+  Image img = malloc(sizeof(struct image));
+  assert(img != NULL);   //Confirma se a memória foi alocada
+
+  img -> pixel = malloc(width * height * sizeof(uint8));
+  assert(img -> pixel != NULL);   //Confirma se a memória dos pixels foi alocada
+
+  img -> width = width;
+  img -> height = height;
+  img -> maxval = maxval;
+
+  memset(img -> pixel, 0, width * height * sizeof(uint8));  //Inicializa os pixels a preto
+
+  return img;
 }
 
 /// Destroy the image pointed to by (*imgp).
@@ -184,6 +200,11 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
 void ImageDestroy(Image* imgp) { ///
   assert (imgp != NULL);
   // Insert your code here!
+  assert (*imgp != NULL);
+
+  free((*imgp) -> pixel);  //Liberta a memória dos pixels
+  free(*imgp);    //Liberta a memória da estrutura da imagem
+  *imgp = NULL;  //Define o ponteiro como NULL
 }
 
 
@@ -296,6 +317,20 @@ int ImageMaxval(Image img) { ///
 void ImageStats(Image img, uint8* min, uint8* max) { ///
   assert (img != NULL);
   // Insert your code here!
+  assert (min != NULL);
+  assert (max != NULL);
+
+  *min = img -> maxval;
+  *max = 0;
+
+  for (int i = 0; i < img -> width * img -> height; i++) {   //Ciclo para percorrer todos os pixeis da imagem
+    if (img -> pixel[i] < *min) {  
+      *min = img -> pixel[i];     //Verificação do mínimo
+    }
+    if (img -> pixel[i] > *max) {
+      *max = img -> pixel[i];    //Verificação do máximo
+    }
+}
 }
 
 /// Check if pixel position (x,y) is inside img.
@@ -308,6 +343,8 @@ int ImageValidPos(Image img, int x, int y) { ///
 int ImageValidRect(Image img, int x, int y, int w, int h) { ///
   assert (img != NULL);
   // Insert your code here!
+  //Verificação se as coordenadas do retângulo são positivas e se o retângulo está dentro da imagem
+  return (x >= 0 && y >= 0 && w >= 0 && h >= 0) && (x + w <= img -> width && y + h <= img -> height);  
 }
 
 /// Pixel get & set operations
@@ -323,6 +360,11 @@ int ImageValidRect(Image img, int x, int y, int w, int h) { ///
 static inline int G(Image img, int x, int y) {
   int index;
   // Insert your code here!
+  assert (img != NULL);
+  assert (ImageValidPos(img, x, y));    //Verificação se as coordenadas estão dentro da imagem
+
+  //Cálculo do índice
+  index = y * img -> width + x;
   assert (0 <= index && index < img->width*img->height);
   return index;
 }
@@ -358,6 +400,10 @@ void ImageSetPixel(Image img, int x, int y, uint8 level) { ///
 void ImageNegative(Image img) { ///
   assert (img != NULL);
   // Insert your code here!
+  for (int i = 0; i < img -> width * img -> height; i++) {    //Ciclo para percorrer todos os pixeis da imagem
+    img -> pixel[i] = img -> maxval - img -> pixel[i];    //Transformação dos pixeis
+  }
+
 }
 
 /// Apply threshold to image.
@@ -366,6 +412,14 @@ void ImageNegative(Image img) { ///
 void ImageThreshold(Image img, uint8 thr) { ///
   assert (img != NULL);
   // Insert your code here!
+  for (int i = 0; i < img -> width * img -> height; i++) {    //Ciclo para percorrer todos os pixeis da imagem
+    if (img -> pixel[i] < thr) {    //Verificação se o pixel é menor que o threshold
+      img -> pixel[i] = 0;
+    }
+    else {    // se o pixel é maior ou igual ao threshold
+      img -> pixel[i] = img -> maxval;
+    }
+  }
 }
 
 /// Brighten image by a factor.
@@ -374,8 +428,16 @@ void ImageThreshold(Image img, uint8 thr) { ///
 /// darken the image if factor<1.0.
 void ImageBrighten(Image img, double factor) { ///
   assert (img != NULL);
-  // ? assert (factor >= 0.0);
+  assert (factor >= 0.0);
   // Insert your code here!
+  for (int i = 0; i < img -> width * img -> height; i++) {
+    if (img -> pixel[i] * factor > img -> maxval) {
+      img -> pixel[i] = img -> maxval;
+    }
+    else {
+      img -> pixel[i] = img -> pixel[i] * factor;
+    }
+  }
 }
 
 
