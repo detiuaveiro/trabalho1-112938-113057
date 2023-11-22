@@ -1,0 +1,40 @@
+Trabalho1
+
+Descarregue o enunciado do trabalho.
+
+O código de base para o trabalho é disponibilizado via GitHub Classroom. Leia a secção seguinte para o obter.
+Registar equipa e clonar o repositório do trabalho
+
+    Aceder ao assignment do github.
+    O primeiro aluno de cada grupo a aceder deve criar uma nova equipa (grupo de trabalho) dando um nome no formato xxxxx-yyyyy, onde xxxxx e yyyyy são os números mecanográficos dos membros, por ordem crescente.
+
+GitHub accept assignment
+
+    O segundo aluno a aceder deve juntar-se à equipa criada previamente pelo colega.
+    O repositório da equipa será criado automaticamente, com os ficheiros necessários para começar o trabalho.
+    Atualizem a página para ver o endereço do repositório criado.
+
+GitHub accept assignment
+
+    Acedam à página do repositório e copiem o endereço para clonar o repositório.
+
+GitHub accept assignment
+
+    No terminal, executar git clone git@github.com:detiuaveiro/trabalho1-... para clonar o repositório.
+    Deve ter sido criado um diretório com o nome trabalho1-..., com os ficheiros fornecidos. Esse é o seu repositório local, onde deve trabalhar a partir de agora.
+
+Como trabalhar?
+
+    Analisar a interface do TAD em image8bit.h e sua utilização nos programas imageTest.c e imageTool.
+    Editar o ficheiro image8bit.c e completar as funções em falta. É possível implementar e testar as funções progressivamente. Sigam as sugestões em README.md.
+    Para compilar os programas pode executar make ou make all.
+    O programa ./imageTool é muito versátil e pode ser chamado com argumentos adequados para invocar e testar as diferentes funções implementadas.
+
+    Sempre que acharem apropriado, podem registar as alterações no repositório usando comandos git na linha de comandos (ou funcionalidade equivalente no IDE). Por exemplo:
+
+    git commit -a -m "Mensagem resumo"     # para submeter todas as alterações feitas
+    git push                   # para atualizar o repositório remoto (em github.com)
+
+    O outro membro da equipa deve fazer git pull (ou equivalente) para atualizar o seu repositório com as alterações.
+
+
