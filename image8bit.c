@@ -93,7 +93,6 @@ char* ImageErrMsg() { ///
 
 }
 
-
 // Defensive programming aids
 //
 // Proper defensive programming in C, which lacks an exception mechanism,
@@ -148,15 +147,13 @@ static int check(int condition, const char* failmsg) {
 void ImageInit(void) { ///
   InstrCalibrate();
   InstrName[0] = "pixmem";  // InstrCount[0] will count pixel array acesses
-  // Name other counters here...
-
-
-  
+  // Name other counters here... 
 }
 
 // Macros to simplify accessing instrumentation counters:
 #define PIXMEM InstrCount[0]
 // Add more macros here...
+
 
 
 // TIP: Search for PIXMEM or InstrCount to see where it is incremented!
@@ -176,7 +173,9 @@ Image ImageCreate(int width, int height, uint8 maxval) { ///
   assert (width >= 0);
   assert (height >= 0);
   assert (0 < maxval && maxval <= PixMax);
+
   // Insert your code here!
+
   Image img = malloc(sizeof(struct image));
   assert(img != NULL);   //Confirma se a memória foi alocada
 
@@ -205,6 +204,7 @@ void ImageDestroy(Image* imgp) { ///
   free((*imgp) -> pixel);  //Liberta a memória dos pixels
   free(*imgp);    //Liberta a memória da estrutura da imagem
   *imgp = NULL;  //Define o ponteiro como NULL
+
 }
 
 
@@ -465,7 +465,19 @@ void ImageBrighten(Image img, double factor) { ///
 Image ImageRotate(Image img) { ///
   assert (img != NULL);
   // Insert your code here!
+  // Create a new image with rotated dimensions
+    Image rotatedImg = ImageCreate(img->height, img->width, img->maxval);
+    // Rotate the image
+    for (int i = 0; i < img->height; i++) {
+      for (int j = 0; j < img->width; j++) {
+        rotatedImg->pixel[j * img->height + (img->height - 1 - i)] = img->pixel[i * img->width + j];
+      }
+    }
+
+    return rotatedImg;
 }
+
+
 
 /// Mirror an image = flip left-right.
 /// Returns a mirrored version of the image.
@@ -474,9 +486,20 @@ Image ImageRotate(Image img) { ///
 /// On success, a new image is returned.
 /// (The caller is responsible for destroying the returned image!)
 /// On failure, returns NULL and errno/errCause are set accordingly.
-Image ImageMirror(Image img) { ///
+Image ImageMirror(Image img) {
   assert (img != NULL);
-  // Insert your code here!
+  
+  // Create a new image with the same dimensions as the original image
+  Image mirroredImg = ImageCreate(img->width, img->height, img->maxval);
+
+  // Mirror the image by copying pixels from right to left
+  for (int i = 0; i < img->height; i++) {
+    for (int j = 0; j < img->width; j++) {
+      mirroredImg->pixel[i * img->width + (img->width - 1 - j)] = img->pixel[i * img->width + j];
+    }
+  }
+
+  return mirroredImg;
 }
 
 /// Crop a rectangular subimage from img.
@@ -491,11 +514,28 @@ Image ImageMirror(Image img) { ///
 /// On success, a new image is returned.
 /// (The caller is responsible for destroying the returned image!)
 /// On failure, returns NULL and errno/errCause are set accordingly.
-Image ImageCrop(Image img, int x, int y, int w, int h) { ///
+
+Image ImageCrop(Image img, int x, int y, int w, int h) {
   assert (img != NULL);
   assert (ImageValidRect(img, x, y, w, h));
   // Insert your code here!
+  // Create a new image with the specified width and height
+  Image croppedImg = ImageCreate(w, h, img->maxval);
+  if (croppedImg == NULL) {
+    // Handle failure to create new image
+    return NULL;
+  }
+
+  // Copy the pixels from the original image to the cropped image
+  for (int i = 0; i < h; i++) {
+    for (int j = 0; j < w; j++) {
+      croppedImg->pixel[i * w + j] = img->pixel[(y + i) * img->width + (x + j)];
+    }
+  }
+
+  return croppedImg;
 }
+
 
 
 /// Operations on two images
@@ -509,7 +549,15 @@ void ImagePaste(Image img1, int x, int y, Image img2) { ///
   assert (img2 != NULL);
   assert (ImageValidRect(img1, x, y, img2->width, img2->height));
   // Insert your code here!
+
+  // Paste img2 into img1 at position (x, y)
+  for (int i = 0; i < img2->height; i++) {
+    for (int j = 0; j < img2->width; j++) {
+      img1->pixel[(y + i) * img1->width + (x + j)] = img2->pixel[i * img2->width + j];
+    }
+  }
 }
+
 
 /// Blend an image into a larger image.
 /// Blend img2 into position (x, y) of img1.
@@ -517,31 +565,89 @@ void ImagePaste(Image img1, int x, int y, Image img2) { ///
 /// Requires: img2 must fit inside img1 at position (x, y).
 /// alpha usually is in [0.0, 1.0], but values outside that interval
 /// may provide interesting effects.  Over/underflows should saturate.
-void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
+
+
+void ImageBlend(Image img1, int x, int y, Image img2, double alpha) {
   assert (img1 != NULL);
   assert (img2 != NULL);
   assert (ImageValidRect(img1, x, y, img2->width, img2->height));
   // Insert your code here!
+  // Blend img2 into img1 at position (x, y)
+  for (int i = 0; i < img2->height; i++) {
+    for (int j = 0; j < img2->width; j++) {
+      int pixel1 = img1->pixel[(y + i) * img1->width + (x + j)];
+      int pixel2 = img2->pixel[i * img2->width + j];
+
+      // Calculate the blended pixel value
+      int blendedPixel = (int)(alpha * pixel2 + (1 - alpha) * pixel1);
+
+      // Saturate the blended pixel value
+      if (blendedPixel > img1->maxval) {
+        blendedPixel = img1->maxval;
+      } else if (blendedPixel < 0) {
+        blendedPixel = 0;
+      }
+
+      img1->pixel[(y + i) * img1->width + (x + j)] = blendedPixel;
+    }
+  }
 }
+
 
 /// Compare an image to a subimage of a larger image.
 /// Returns 1 (true) if img2 matches subimage of img1 at pos (x, y).
 /// Returns 0, otherwise.
-int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
+int ImageMatchSubImage(Image img1, int x, int y, Image img2) {
   assert (img1 != NULL);
   assert (img2 != NULL);
   assert (ImageValidPos(img1, x, y));
   // Insert your code here!
+
+  // Check if the dimensions of img2 exceed the boundaries of img1 at position (x, y)
+  if (x + img2->width > img1->width || y + img2->height > img1->height) {
+    return 0; // No match found
+  }
+
+  // Compare each pixel of img2 with the corresponding pixel in img1
+  for (int i = 0; i < img2->height; i++) {
+    for (int j = 0; j < img2->width; j++) {
+      int pixel1 = img1->pixel[(y + i) * img1->width + (x + j)];
+      int pixel2 = img2->pixel[i * img2->width + j];
+
+      // If any pixel does not match, return 0 (false)
+      if (pixel1 != pixel2) {
+        return 0; // No match found
+      }
+    }
+  }
+
+  return 1; // Match found
 }
+
 
 /// Locate a subimage inside another image.
 /// Searches for img2 inside img1.
 /// If a match is found, returns 1 and matching position is set in vars (*px, *py).
 /// If no match is found, returns 0 and (*px, *py) are left untouched.
-int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
+
+int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) {
   assert (img1 != NULL);
   assert (img2 != NULL);
   // Insert your code here!
+  // Iterate through each pixel in img1
+  for (int i = 0; i <= img1->height - img2->height; i++) {
+    for (int j = 0; j <= img1->width - img2->width; j++) {
+      // Check if img2 matches the subimage of img1 starting at position (i, j)
+      if (ImageMatchSubImage(img1, j, i, img2)) {
+        // Set the matching position in vars (*px, *py)
+        *px = j;
+        *py = i;
+        return 1; // Match found
+      }
+    }
+  }
+
+  return 0; // No match found
 }
 
 
@@ -551,7 +657,37 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 /// Each pixel is substituted by the mean of the pixels in the rectangle
 /// [x-dx, x+dx]x[y-dy, y+dy].
 /// The image is changed in-place.
-void ImageBlur(Image img, int dx, int dy) { ///
-  // Insert your code here!
+void ImageBlur(Image img, int dx, int dy) {
+  assert(img != NULL);
+  assert(dx >= 0 && dy >= 0);
+
+  int width = img->width;
+  int height = img->height;
+  int* blurredPixels = malloc(width * height * sizeof(int));
+
+  for (int y = 0; y < height; y++) {
+    for (int x = 0; x < width; x++) {
+      int sum = 0;
+      int count = 0;
+
+      for (int j = -dy; j <= dy; j++) {
+        for (int i = -dx; i <= dx; i++) {
+          int nx = x + i;
+          int ny = y + j;
+
+          if (nx >= 0 && nx < width && ny >= 0 && ny < height) {
+            sum += img->pixel[ny * width + nx];
+            count++;
+          }
+        }
+      }
+
+      blurredPixels[y * width + x] = sum / count;
+    }
+  }
+
+  memcpy(img->pixel, blurredPixels, width * height * sizeof(int));
+  free(blurredPixels);
 }
+
 
