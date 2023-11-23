@@ -428,14 +428,14 @@ void ImageThreshold(Image img, uint8 thr) { ///
 /// darken the image if factor<1.0.
 void ImageBrighten(Image img, double factor) { ///
   assert (img != NULL);
-  assert (factor >= 0.0);
+  assert (factor >= 0.0); 
   // Insert your code here!
-  for (int i = 0; i < img -> width * img -> height; i++) {
-    if (img -> pixel[i] * factor > img -> maxval) {
-      img -> pixel[i] = img -> maxval;
+  for (int i = 0; i < img -> width * img -> height; i++) {  //Ciclo para percorrer todos os pixeis da imagem
+    if (img -> pixel[i] * factor > img -> maxval) {   //Verificação se o pixel é maior que o máximo
+      img -> pixel[i] = img -> maxval;  
     }
-    else {
-      img -> pixel[i] = img -> pixel[i] * factor;
+    else {    // se o pixel é menor ou igual ao máximo
+      img -> pixel[i] = img -> pixel[i] * factor;   //Transformação dos pixeis
     }
   }
 }
@@ -465,6 +465,18 @@ void ImageBrighten(Image img, double factor) { ///
 Image ImageRotate(Image img) { ///
   assert (img != NULL);
   // Insert your code here!
+  Image rotImage = ImageCreate(img -> height, img -> width, img -> maxval);   //Criação de uma nova imagem com as dimensões trocadas
+  if (rotImage == NULL) {
+    return NULL;
+  }
+
+  for (int i = 0; i < img -> width; i++) {   //Ciclo para percorrer todos os pixeis da imagem
+    for (int j = 0; j < img -> height; j++) {
+      ImageSetPixel(rotImage, j, img -> width - i - 1, ImageGetPixel(img, i, j));   //Rotação da imagem
+    }
+  }
+
+  return rotImage;
 }
 
 /// Mirror an image = flip left-right.
@@ -477,6 +489,19 @@ Image ImageRotate(Image img) { ///
 Image ImageMirror(Image img) { ///
   assert (img != NULL);
   // Insert your code here!
+  Image mirImage = ImageCreate(img -> width, img -> height, img -> maxval);   //Criação de uma nova imagem com as dimensões iguais
+  if (mirImage == NULL) {
+    return NULL;
+  }
+
+  for (int i = 0; i < img -> width; i++) {   //Ciclo para percorrer todos os pixeis da imagem
+    for (int j = 0; j < img -> height; j++) {
+      ImageSetPixel(mirImage, img -> width - i - 1, j, ImageGetPixel(img, i, j));   //Espelhamento da imagem
+    }
+  }
+
+  return mirImage;
+
 }
 
 /// Crop a rectangular subimage from img.
@@ -495,6 +520,18 @@ Image ImageCrop(Image img, int x, int y, int w, int h) { ///
   assert (img != NULL);
   assert (ImageValidRect(img, x, y, w, h));
   // Insert your code here!
+  Image cropImage = ImageCreate(w, h, img -> maxval);   //Criação de uma nova imagem com as dimensões do retângulo
+  if (cropImage == NULL) {
+    return NULL;
+  }
+
+  for (int i = 0; i < w; i++) {   //Ciclo para percorrer todos os pixeis da imagem
+    for (int j = 0; j < h; j++) {
+      ImageSetPixel(cropImage, i, j, ImageGetPixel(img, x + i, y + j));   //Criação da imagem cortada
+    }
+  }
+
+  return cropImage;
 }
 
 
@@ -509,6 +546,11 @@ void ImagePaste(Image img1, int x, int y, Image img2) { ///
   assert (img2 != NULL);
   assert (ImageValidRect(img1, x, y, img2->width, img2->height));
   // Insert your code here!
+  for (int i = 0; i < img2 -> width; i++) {   //Ciclo para percorrer todos os pixeis da imagem
+    for (int j = 0; j < img2 -> height; j++) {
+      ImageSetPixel(img1, x + i, y + j, ImageGetPixel(img2, i, j));   //Colagem da imagem
+    }
+  }
 }
 
 /// Blend an image into a larger image.
@@ -522,6 +564,13 @@ void ImageBlend(Image img1, int x, int y, Image img2, double alpha) { ///
   assert (img2 != NULL);
   assert (ImageValidRect(img1, x, y, img2->width, img2->height));
   // Insert your code here!
+  assert (alpha >= 0.0 && alpha <= 1.0);
+
+  for (int j=0; j < img2 -> height; j++) {   
+    for (int i=0; i < img2 -> width; i++) {
+      ImageSetPixel(img1, x + i, y + j, (uint8)(ImageGetPixel(img1, x + i, y + j) * (1 - alpha) + ImageGetPixel(img2, i, j) * alpha));  
+    }
+  }
 }
 
 /// Compare an image to a subimage of a larger image.
@@ -532,6 +581,18 @@ int ImageMatchSubImage(Image img1, int x, int y, Image img2) { ///
   assert (img2 != NULL);
   assert (ImageValidPos(img1, x, y));
   // Insert your code here!
+  assert (img1 -> width - x >= img2 -> width && img1 -> height - y >= img2 -> height);   //Verificação se a imagem cabe dentro da outra
+
+  for (int i = 0; i < img2 -> width; i++) {  
+    for (int j = 0; j < img2 -> height; j++) {
+      if (ImageGetPixel(img1, x + i, y + j) != ImageGetPixel(img2, i, j)) {   //Verificação se os pixeis são iguais
+        return 0;
+      }
+    }
+  }
+
+  return 1;
+  
 }
 
 /// Locate a subimage inside another image.
@@ -542,6 +603,21 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
   assert (img1 != NULL);
   assert (img2 != NULL);
   // Insert your code here!
+  assert (px != NULL);
+  assert (py != NULL);
+
+  for (int i = 0; i < img1 -> width - img2 -> width + 1; i++) {   
+    for (int j = 0; j < img1 -> height - img2 -> height + 1; j++) {
+      if (ImageMatchSubImage(img1, i, j, img2)) {   //Verificação se as imagens são iguais
+        *px = i;
+        *py = j;
+        return 1;
+      }
+    }
+  }
+
+  return 0;
+  
 }
 
 
@@ -553,5 +629,39 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) { ///
 /// The image is changed in-place.
 void ImageBlur(Image img, int dx, int dy) { ///
   // Insert your code here!
+  assert (img != NULL);
+  assert (dx >= 0 && dy >= 0);
+
+  Image img2 = ImageCreate(img -> width, img -> height, img -> maxval);   //Criação de uma nova imagem com as dimensões iguais
+  if (img2 == NULL) {
+    return;
+  }
+  
+  for (int i = 0; i < img -> width; i++) {   //Ciclo para percorrer todos os pixeis da imagem
+    for (int j = 0; j < img -> height; j++) {
+      int sum = 0;
+      int count = 0;
+      for (int k = i - dx; k <= i + dx; k++) {   //Ciclo para percorrer todos os pixeis da imagem
+        for (int l = j - dy; l <= j + dy; l++) {
+          if (ImageValidPos(img, k, l)) {   //Verificação se as coordenadas estão dentro da imagem
+            sum += ImageGetPixel(img, k, l);   //Soma dos pixeis
+            count++;   //Contagem dos pixeis
+          }
+        }
+      }
+      ImageSetPixel(img2, i, j, (uint8)(sum / count));   //Média dos pixeis
+    }
+  }
+
+  for (int i = 0; i < img -> width; i++) {   //Ciclo para percorrer todos os pixeis da imagem
+    for (int j = 0; j < img -> height; j++) {
+      ImageSetPixel(img, i, j, ImageGetPixel(img2, i, j));   //Substituição dos pixeis
+    }
+  }
+
+  ImageDestroy(&img2);   //Libertação da memória da imagem auxiliar
+  
+  
+
 }
 
