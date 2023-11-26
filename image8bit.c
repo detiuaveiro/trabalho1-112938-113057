@@ -426,19 +426,14 @@ void ImageThreshold(Image img, uint8 thr) { ///
 /// Multiply each pixel level by a factor, but saturate at maxval.
 /// This will brighten the image if factor>1.0 and
 /// darken the image if factor<1.0.
-void ImageBrighten(Image img, double factor) { ///
+void ImageBrighten(Image img, double factor) {
   assert (img != NULL);
-  assert (factor >= 0.0); 
+  assert (factor >= 0.0);
   // Insert your code here!
-  for (int i = 0; i < img -> width * img -> height; i++) {  //Ciclo para percorrer todos os pixeis da imagem
-    if (img -> pixel[i] * factor > img -> maxval) {   //Verificação se o pixel é maior que o máximo
-      img -> pixel[i] = img -> maxval;  
-    }
-    else {    // se o pixel é menor ou igual ao máximo
-      img -> pixel[i] = img -> pixel[i] * factor;   //Transformação dos pixeis
-    }
-  }
 }
+
+
+
 
 
 /// Geometric transformations
@@ -567,18 +562,30 @@ void ImagePaste(Image img1, int x, int y, Image img2) { ///
 
 
 void ImageBlend(Image img1, int x, int y, Image img2, double alpha) {
-  assert (img1 != NULL);
-  assert (img2 != NULL);
-  assert (ImageValidRect(img1, x, y, img2->width, img2->height));
-  // Insert your code here!
-  assert (alpha >= 0.0 && alpha <= 1.0);
+  assert(img1 != NULL);
+  assert(img2 != NULL);
+  assert(x >= 0 && y >= 0);
+  assert(x + img2->width <= img1->width);
+  assert(y + img2->height <= img1->height);
+  assert(alpha >= 0.0 && alpha <= 1.0);
 
-  for (int j=0; j < img2 -> height; j++) {   
-    for (int i=0; i < img2 -> width; i++) {
-      ImageSetPixel(img1, x + i, y + j, (uint8)(ImageGetPixel(img1, x + i, y + j) * (1 - alpha) + ImageGetPixel(img2, i, j) * alpha));  
+  for (int j = 0; j < img2->height; j++) {
+    for (int i = 0; i < img2->width; i++) {
+      int posImg1 = (y + j) * img1->width + (x + i);
+      int posImg2 = j * img2->width + i;
+
+      uint8 blendedPixel = (uint8)(alpha * img2->pixel[posImg2] + (1 - alpha) * img1->pixel[posImg1]);
+      
+      // Ensuring the blended value does not exceed the maximum pixel value
+      if (blendedPixel > img1->maxval) {
+        blendedPixel = img1->maxval;
+      }
+
+      img1->pixel[posImg1] = blendedPixel;
     }
   }
 }
+
 
 
 /// Compare an image to a subimage of a larger image.
@@ -635,42 +642,11 @@ int ImageLocateSubImage(Image img1, int* px, int* py, Image img2) {
 /// Each pixel is substituted by the mean of the pixels in the rectangle
 /// [x-dx, x+dx]x[y-dy, y+dy].
 /// The image is changed in-place.
-void ImageBlur(Image img, int dx, int dy) { ///
-  // Insert your code here!
-  assert (img != NULL);
-  assert (dx >= 0 && dy >= 0);
 
-  Image img2 = ImageCreate(img -> width, img -> height, img -> maxval);   //Criação de uma nova imagem com as dimensões iguais
-  if (img2 == NULL) {
-    return;
-  }
-  
-  for (int i = 0; i < img -> width; i++) {   //Ciclo para percorrer todos os pixeis da imagem
-    for (int j = 0; j < img -> height; j++) {
-      int sum = 0;
-      int count = 0;
-      for (int k = i - dx; k <= i + dx; k++) {   //Ciclo para percorrer todos os pixeis da imagem
-        for (int l = j - dy; l <= j + dy; l++) {
-          if (ImageValidPos(img, k, l)) {   //Verificação se as coordenadas estão dentro da imagem
-            sum += ImageGetPixel(img, k, l);   //Soma dos pixeis
-            count++;   //Contagem dos pixeis
-          }
-        }
-      }
-      ImageSetPixel(img2, i, j, (uint8)(sum / count));   //Média dos pixeis
-    }
-  }
-
-  for (int i = 0; i < img -> width; i++) {   //Ciclo para percorrer todos os pixeis da imagem
-    for (int j = 0; j < img -> height; j++) {
-      ImageSetPixel(img, i, j, ImageGetPixel(img2, i, j));   //Substituição dos pixeis
-    }
-  }
-
-  ImageDestroy(&img2);   //Libertação da memória da imagem auxiliar
-  
-  
-
+void ImageBlur(Image img, int dx, int dy) {
+    
 }
+
+
 
 
