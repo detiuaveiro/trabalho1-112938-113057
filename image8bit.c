@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include "instrumentation.h"
 
+
 // The data structure
 //
 // An image is stored in a structure containing 3 fields:
@@ -426,9 +427,26 @@ void ImageThreshold(Image img, uint8 thr) { ///
 /// This will brighten the image if factor>1.0 and
 /// darken the image if factor<1.0.
 void ImageBrighten(Image img, double factor) {
-  assert (img != NULL);
-  assert (factor >= 0.0);
-  // Insert your code here!
+    assert(img != NULL);
+    assert(factor >= 0.0);
+
+    int numPixels = img->width * img->height;
+    for (int i = 0; i < numPixels; i++) {
+        // Apply the brightness factor
+        double newPixelValue = img->pixel[i] * factor;
+
+        // Round the result to the nearest integer to minimize rounding errors
+        newPixelValue += 0.5;
+
+        // Saturate at maxval
+        if (newPixelValue > img->maxval) {
+            newPixelValue = img->maxval;
+        } else if (newPixelValue < 0) {
+            newPixelValue = 0; // Ensure the value doesn't go below 0
+        }
+
+        img->pixel[i] = (uint8_t)newPixelValue;
+    }
 }
 
 
