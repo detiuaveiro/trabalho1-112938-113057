@@ -580,26 +580,13 @@ void ImagePaste(Image img1, int x, int y, Image img2) { ///
 
 
 void ImageBlend(Image img1, int x, int y, Image img2, double alpha) {
-  assert(img1 != NULL);
-  assert(img2 != NULL);
-  assert(ImageValidRect(img1, x, y, img2->width, img2->height));
-  assert(alpha >= 0.0 && alpha <= 1.0);
+  assert (img1 != NULL);
+  assert (img2 != NULL);
+  assert (ImageValidRect(img1, x, y, img2->width, img2->height));
 
-  for (int y2 = 0; y2 < img2->height; y2++) {
-    for (int x2 = 0; x2 < img2->width; x2++) {
-      // Calculate the position in img1 where the pixel should be blended
-      int destX = x + x2;
-      int destY = y + y2;
-
-      // Get the pixel from both images
-      uint8 pixel1 = ImageGetPixel(img1, destX, destY);
-      uint8 pixel2 = ImageGetPixel(img2, x2, y2);
-
-      // Blend the pixels using the alpha value
-      uint8 blendedPixel = (uint8)(alpha * pixel2 + (1 - alpha) * pixel1);
-
-      // Set the blended pixel in img1
-      ImageSetPixel(img1, destX, destY, blendedPixel);
+  for (int i = 0; i < img2 -> width; i++) {
+    for (int j = 0; j < img2 -> height; j++) {
+      ImageSetPixel(img1, x + i, y + j, (uint8)(ImageGetPixel(img1, x + i, y + j) * (1 - alpha) + ImageGetPixel(img2, i, j) * alpha + 0.5));   //Image blend
     }
   }
 }
